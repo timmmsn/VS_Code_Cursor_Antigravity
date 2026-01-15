@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code vs Cursor vs Antigravity 深度解析</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+        }
+        
+        /* Glassmorphism utilities */
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        
+        /* Custom Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- 資料設定 ---
+        const aiModels = [
+            { name: "Claude 3.5 Sonnet", provider: "Anthropic", strength: "Cursor 的首選模型，邏輯推理與代碼生成品質極高，適合複雜重構。", icon: "fa-brain" },
+            { name: "Gemini 3 Pro", provider: "Google", strength: "Antigravity 的核心，推理能力強，且與 Google 生態系整合度最高。", icon: "fa-gem" },
+            { name: "GPT-4o", provider: "OpenAI", strength: "速度快，綜合能力強，VS Code Copilot 的主力模型。", icon: "fa-bolt" },
+            { name: "o1 / Deep Think", provider: "OpenAI/Google", strength: "深度推理模型，適合解決演算法難題，Cursor 與 Antigravity 皆支援。", icon: "fa-microchip" },
+        ];
+
+        const pricingData = {
+            vscode: {
+                title: "VS Code",
+                subtitle: "+ GitHub Copilot",
+                price: "免費 + $10/月",
+                color: "blue",
+                features: [
+                    "編輯器完全免費",
+                    "Copilot 個人版 $10/月",
+                    "Copilot 企業版 $19/月",
+                    "學生可免費使用 Copilot",
+                    "企業資安合規首選"
+                ]
+            },
+            cursor: {
+                title: "Cursor AI",
+                subtitle: "AI Native Editor",
+                price: "$20 / 月 (Pro)",
+                color: "purple",
+                features: [
+                    "免費版有額度限制",
+                    "Pro 版無限代碼補全 (Tab)",
+                    "每月 500 次快速高級請求",
+                    "Composer 多檔編輯功能",
+                    "隱私模式 (不存代碼)"
+                ]
+            },
+            antigravity: {
+                title: "Google Antigravity",
+                subtitle: "Agent-First IDE",
+                price: "免費 (預覽期間)",
+                color: "teal",
+                features: [
+                    "目前 Public Preview 免費",
+                    "使用 Gemini 3 Pro 模型",
+                    "Agent Manager 任務管理",
+                    "雲端/本地混合執行",
+                    "原生整合 Google Cloud"
+                ]
+            }
+        };
+
+        const comparisons = [
+            {
+                category: "核心理念",
+                vscode: "傳統編輯器 + 助手",
+                cursor: "AI 增強型編輯器 (Pair Programmer)",
+                antigravity: "代理人平台 (Agent-First)",
+                verdict: "Cursor 讓你寫得更快，Antigravity 試圖幫你完成整個任務。"
+            },
+            {
+                category: "互動模式",
+                vscode: "對話框 (Chat) + 補全",
+                cursor: "Tab 預測 + Composer (多檔編輯)",
+                antigravity: "Manager View (指派任務給 Agent)",
+                verdict: "Antigravity 允許你像管理者一樣分派工作，而 Cursor 則是你最強的副手。"
+            },
+            {
+                category: "自主能力",
+                vscode: "低 (需人工操作)",
+                cursor: "中 (可讀寫檔案，需人工確認)",
+                antigravity: "高 (可自主操作終端機、瀏覽器、測試)",
+                verdict: "Antigravity 的 Agent 可以自己開瀏覽器測試功能是否正常，這是目前最大的亮點。"
+            },
+            {
+                category: "專案理解",
+                vscode: "基於開啟的檔案",
+                cursor: "RAG 索引 (Codebase Indexing)",
+                antigravity: "Artifacts (生成計畫與產出物)",
+                verdict: "Cursor 擅長理解現有代碼；Antigravity 擅長生成新的結構化計畫 (Artifacts)。"
+            }
+        ];
+
+        // --- 元件 ---
+
+        const TabButton = ({ id, label, icon, activeTab, setActiveTab }) => (
+            <button 
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center space-x-2 px-4 py-2 md:px-6 md:py-2 rounded-full font-medium transition-all whitespace-nowrap text-sm md:text-base ${
+                    activeTab === id 
+                    ? 'bg-slate-700 text-white shadow-[0_0_15px_rgba(56,189,248,0.3)] border border-slate-500' 
+                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white border border-transparent'
+                }`}
+            >
+                <i className={`fa-solid ${icon}`}></i>
+                <span>{label}</span>
+            </button>
+        );
+
+        const ComparisonSection = () => (
+            <div className="space-y-6 animate-fade-in">
+                <div className="grid md:grid-cols-3 gap-4 mb-8">
+                    <div className="bg-blue-900/10 border border-blue-500/20 p-4 rounded-xl">
+                        <h3 className="text-blue-400 font-bold mb-1 flex items-center"><i className="fa-solid fa-code mr-2"></i> VS Code</h3>
+                        <p className="text-sm text-slate-400">基礎紮實，生態系最豐富，適合不依賴 AI 或受限於資安規範的開發者。</p>
+                    </div>
+                    <div className="bg-purple-900/10 border border-purple-500/20 p-4 rounded-xl">
+                        <h3 className="text-purple-400 font-bold mb-1 flex items-center"><i className="fa-solid fa-wand-magic-sparkles mr-2"></i> Cursor</h3>
+                        <p className="text-sm text-slate-400">目前最強的 AI 編輯器。透過 Tab 和 Composer 極大化個人的開發速度 (Velocity)。</p>
+                    </div>
+                    <div className="bg-teal-900/10 border border-teal-500/20 p-4 rounded-xl">
+                        <h3 className="text-teal-400 font-bold mb-1 flex items-center"><i className="fa-solid fa-rocket mr-2"></i> Antigravity</h3>
+                        <p className="text-sm text-slate-400">未來的型態。你變成了「經理」，管理多個 AI Agent 自主規劃、寫碼、測試。</p>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-700 shadow-xl">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr className="bg-slate-800 text-slate-200">
+                                <th className="p-4 font-bold border-b border-slate-700 w-1/5">比較項目</th>
+                                <th className="p-4 font-bold border-b border-slate-700 w-1/4 text-blue-300">VS Code</th>
+                                <th className="p-4 font-bold border-b border-slate-700 w-1/4 text-purple-300">Cursor</th>
+                                <th className="p-4 font-bold border-b border-slate-700 w-1/4 text-teal-300">Antigravity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {comparisons.map((item, index) => (
+                                <tr key={index} className={`hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? 'bg-slate-900/50' : 'bg-[#131c31]/50'}`}>
+                                    <td className="p-4 border-b border-slate-800 font-medium text-slate-300">{item.category}</td>
+                                    <td className="p-4 border-b border-slate-800 text-slate-400 text-sm">{item.vscode}</td>
+                                    <td className="p-4 border-b border-slate-800 text-slate-200 font-medium text-sm border-l border-slate-800">{item.cursor}</td>
+                                    <td className="p-4 border-b border-slate-800 text-teal-100 font-medium text-sm border-l border-slate-800 bg-teal-900/5">{item.antigravity}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+
+        const ProsConsSection = () => (
+            <div className="grid lg:grid-cols-3 gap-6 animate-fade-in">
+                {/* VS Code Column */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-3 mb-2 p-2 bg-blue-500/10 rounded-lg">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <i className="fa-solid fa-code text-blue-400 text-xl"></i>
+                        </div>
+                        <h2 className="text-xl font-bold text-blue-400">VS Code</h2>
+                    </div>
+                    
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-green-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-green-400 mb-3 uppercase tracking-wider">優點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span>生態系最完整，外掛最多</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span>完全免費，無隱藏成本</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span>啟動速度快，資源佔用低</span></li>
+                        </ul>
+                    </div>
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-red-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-red-400 mb-3 uppercase tracking-wider">缺點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span>AI 體驗割裂 (需依賴外掛)</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span>缺乏原生的多檔協作編輯</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Cursor Column */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-3 mb-2 p-2 bg-purple-500/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center font-bold">C</div>
+                        <h2 className="text-xl font-bold text-purple-400">Cursor</h2>
+                    </div>
+
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-green-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-green-400 mb-3 uppercase tracking-wider">優點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span><strong>Composer：</strong>目前最強的代碼生成體驗</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span><strong>Tab 預測：</strong>不僅補全代碼，還預測游標</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span>可無痛遷移 VS Code 設定</span></li>
+                        </ul>
+                    </div>
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-red-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-red-400 mb-3 uppercase tracking-wider">缺點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span>索引 (Indexing) 較吃記憶體</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span>訂閱費 $20/月 對部分人有負擔</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Antigravity Column */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-3 mb-2 p-2 bg-teal-500/10 rounded-lg">
+                        <div className="w-8 h-8 bg-teal-500 text-black rounded-lg flex items-center justify-center font-bold">
+                            <i className="fa-solid fa-user-astronaut text-white"></i>
+                        </div>
+                        <h2 className="text-xl font-bold text-teal-400">Antigravity</h2>
+                    </div>
+
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-green-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-green-400 mb-3 uppercase tracking-wider">優點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span><strong>Agent Manager：</strong>真正的「指派任務」，AI 可並行工作</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span><strong>全端自主：</strong>AI 可控制終端機與瀏覽器進行測試</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-check mt-1 mr-2 text-green-500 text-xs"></i><span><strong>Gemini 原生：</strong>與 Google Cloud/Gemini 整合極佳</span></li>
+                        </ul>
+                    </div>
+                    <div className="glass-panel p-5 rounded-xl border-t-2 border-red-500 bg-slate-800/40">
+                        <h3 className="text-sm font-bold text-red-400 mb-3 uppercase tracking-wider">缺點</h3>
+                        <ul className="space-y-2 text-slate-300 text-sm">
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span><strong>成熟度：</strong>仍處於 Preview 階段，不如 Cursor 穩定</span></li>
+                            <li className="flex items-start"><i className="fa-solid fa-xmark mt-1 mr-2 text-red-500 text-xs"></i><span><strong>習慣改變：</strong>Manager View 需要適應新的工作流</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const PricingSection = () => (
+            <div className="space-y-8 animate-fade-in">
+                <div className="grid md:grid-cols-3 gap-6">
+                    {Object.entries(pricingData).map(([key, data]) => (
+                        <div key={key} className={`glass-panel p-6 rounded-2xl relative overflow-hidden border transition-colors bg-slate-800/50 backdrop-blur group hover:border-opacity-100 border-opacity-30 ${key === 'vscode' ? 'border-blue-500 hover:border-blue-400' : key === 'cursor' ? 'border-purple-500 hover:border-purple-400' : 'border-teal-500 hover:border-teal-400'}`}>
+                            <div className={`absolute top-0 right-0 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase ${key === 'vscode' ? 'bg-blue-600' : key === 'cursor' ? 'bg-purple-600' : 'bg-teal-600'}`}>
+                                {key === 'vscode' ? 'Entry' : key === 'cursor' ? 'Pro Choice' : 'Future'}
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-1">{data.title}</h3>
+                            <p className={`text-xs mb-4 uppercase tracking-wider font-semibold ${key === 'vscode' ? 'text-blue-300' : key === 'cursor' ? 'text-purple-300' : 'text-teal-300'}`}>{data.subtitle}</p>
+                            <p className={`text-2xl font-bold mb-6 ${key === 'vscode' ? 'text-blue-400' : key === 'cursor' ? 'text-purple-400' : 'text-teal-400'}`}>{data.price}</p>
+                            <ul className="space-y-3">
+                                {data.features.map((feat, i) => (
+                                    <li key={i} className="flex items-start text-slate-300 text-sm">
+                                        <i className={`fa-solid fa-check mt-1 mr-2 text-xs ${key === 'vscode' ? 'text-blue-500' : key === 'cursor' ? 'text-purple-500' : 'text-teal-500'}`}></i>
+                                        {feat}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 text-xs text-slate-400 text-center">
+                    * 價格資訊可能隨時間變動，Antigravity 目前為預覽版，未來正式版收費模式尚未公佈。
+                </div>
+            </div>
+        );
+
+        const AIModelsSection = () => (
+            <div className="space-y-6 animate-fade-in">
+                <div className="mb-6 text-center">
+                    <h2 className="text-2xl font-bold text-white mb-2">模型生態系比較</h2>
+                    <p className="text-slate-400 text-sm">每個平台都有其「本命」模型，但也越來越開放。</p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                    {aiModels.map((model, index) => (
+                        <div key={index} className="glass-panel p-5 rounded-xl hover:bg-slate-800 transition-all flex items-start space-x-4 bg-slate-800/50 backdrop-blur border border-slate-700">
+                            <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-300 text-xl">
+                                <i className={`fa-solid ${model.icon}`}></i>
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white">{model.name}</h3>
+                                <span className="text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded mb-1 inline-block uppercase tracking-wide">{model.provider}</span>
+                                <p className="text-slate-400 text-xs leading-relaxed mt-1">{model.strength}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('comparison');
+
+            const renderTabContent = () => {
+                switch(activeTab) {
+                    case 'comparison': return <ComparisonSection />;
+                    case 'proscons': return <ProsConsSection />;
+                    case 'pricing': return <PricingSection />;
+                    case 'aimodels': return <AIModelsSection />;
+                    default: return <ComparisonSection />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Hero Section */}
+                    <header className="bg-gradient-to-r from-slate-900 via-[#1e293b] to-slate-900 py-16 px-6 text-center border-b border-slate-700 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" style={{backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')"}}></div>
+                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 relative z-10">
+                            IDE 三國鼎立：<br className="md:hidden" />
+                            <span className="text-blue-400">VS Code</span> vs <span className="text-purple-400">Cursor</span> vs <span className="text-teal-400">Antigravity</span>
+                        </h1>
+                        <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed relative z-10">
+                            從「手寫代碼」到「AI 輔助」，再到 Google 最新的「代理人 (Agent)」時代。<br/>
+                            這不只是工具的選擇，而是工作方式的革命。
+                        </p>
+                    </header>
+
+                    {/* Navigation */}
+                    <nav className="flex justify-center mt-8 mb-8 sticky top-0 z-50 bg-[#0f172a]/95 backdrop-blur py-4 border-b border-slate-800 shadow-2xl">
+                        <div className="flex space-x-2 md:space-x-4 overflow-x-auto px-4 w-full md:w-auto justify-start md:justify-center no-scrollbar">
+                            <TabButton id="comparison" label="核心差異" icon="fa-scale-balanced" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <TabButton id="proscons" label="優缺點分析" icon="fa-thumbs-up" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <TabButton id="pricing" label="收費模式" icon="fa-tags" activeTab={activeTab} setActiveTab={setActiveTab} />
+                            <TabButton id="aimodels" label="AI 模型" icon="fa-robot" activeTab={activeTab} setActiveTab={setActiveTab} />
+                        </div>
+                    </nav>
+
+                    {/* Main Content */}
+                    <main className="container mx-auto px-4 max-w-6xl">
+                        {renderTabContent()}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="text-center text-slate-500 mt-20 text-sm pb-8">
+                        <p>Generated by Gemini • 資訊更新於 2026/01/15</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
